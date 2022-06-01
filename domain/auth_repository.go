@@ -33,6 +33,7 @@ func (d AuthRepositoryDb) FindBy(username, password string) (*Login, error) {
 		log.Error("Error while verifying login request from database: ", err.Error())
 		return nil, errors.New("Unexpected database error")
 	}
+	log.Info("User authenticated")
 	return &login, nil
 }
 
