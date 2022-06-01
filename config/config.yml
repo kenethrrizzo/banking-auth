@@ -1,0 +1,10 @@
+database:
+    driver: mysql
+    domain: localhost
+    port: 8080
+    name: banking
+    username: root
+    password: root
+server:
+    address: localhost
+    port: 8080

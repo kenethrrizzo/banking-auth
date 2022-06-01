@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/kenethrrizzo/banking-auth/app"
 )
 
 func main() {
-	log.Println("TODO: Implement logger")
+	log.Info("Starting application")
 	app.Start()
 }
