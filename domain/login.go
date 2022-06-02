@@ -10,6 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const HMAC_SAMPLE_SECRET = "verySecretString"
+
 type Login struct {
 	Username   string         `db:"Username"`
 	CustomerId sql.NullString `db:"CustomerId"`
@@ -26,7 +28,7 @@ func (l Login) GenerateToken() (*string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedTokenAsStr, err := token.SignedString([]byte("verySecretString"))
+	signedTokenAsStr, err := token.SignedString([]byte(HMAC_SAMPLE_SECRET))
 	if err != nil {
 		log.Error("Failed while signing token:", err.Error())
 		return nil, errors.New("Cannot generate token")
