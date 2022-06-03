@@ -15,6 +15,7 @@ type AuthHandler struct {
 }
 
 func (h AuthHandler) login(rw http.ResponseWriter, r *http.Request) {
+	log.Debug("[GET] login")
 	var LoginRequest dto.LoginRequest
 	err := json.NewDecoder(r.Body).Decode(&LoginRequest)
 	if err != nil {
@@ -32,6 +33,7 @@ func (h AuthHandler) login(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (h AuthHandler) verify(rw http.ResponseWriter, r *http.Request) {
+	log.Debug("[GET] verify")
 	urlParams := make(map[string]string)
 	for k := range r.URL.Query() {
 		urlParams[k] = r.URL.Query().Get(k)

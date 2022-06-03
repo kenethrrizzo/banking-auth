@@ -38,6 +38,7 @@ func (l Login) GenerateToken() (*string, error) {
 
 func (l Login) claimsForUser() jwt.MapClaims {
 	accounts := strings.Split(l.Accounts.String, ",")
+	log.Info("Accounts DB: ", accounts)
 	return jwt.MapClaims{
 		"CustomerId": l.CustomerId.String,
 		"Role":       l.Role,

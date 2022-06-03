@@ -20,14 +20,19 @@ func Start() {
 	dbclient := getDatabaseClient()
 
 	authRepository := domain.NewAuthRepository(dbclient)
+	rolePermissions := domain.GetRolePermissions()
 
-	authService := service.NewAuthService(authRepository)
+	authService := service.NewAuthService(authRepository, rolePermissions)
 
 	authHandler := AuthHandler{authService}
 
 	router.HandleFunc(
 		"/auth/login", authHandler.login,
 	).Methods(http.MethodPost)
+
+	router.HandleFunc(
+		"/auth/verify", authHandler.verify,
+	).Methods(http.MethodGet)
 
 	log.Error(http.ListenAndServe(
 		fmt.Sprintf("%s:%s",

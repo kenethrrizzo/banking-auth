@@ -16,7 +16,8 @@ type AuthService interface {
 }
 
 type DefaultAuthService struct {
-	repo domain.AuthRepository
+	repo            domain.AuthRepository
+	rolePermissions domain.RolePermissions
 }
 
 func (s DefaultAuthService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
@@ -38,17 +39,25 @@ func (s DefaultAuthService) Login(req dto.LoginRequest) (*dto.LoginResponse, err
 func (s DefaultAuthService) Verify(urlParams map[string]string) (bool, error) {
 	jwtToken, err := jwtTokenFromString(urlParams["token"])
 	if err != nil {
+		log.Error("Error while converting JWT from string")
 		return false, err
 	}
 	// Checking the validity of the token, expiry time and signature
 	if !jwtToken.Valid {
+		log.Error("JWT is not valid")
 		return false, errors.New("Invalid token")
 	}
 	// Casting the token claims to jwt.MapClaims
-	//mapClaims := jwtToken.Claims.(jwt.MapClaims)
-
-	//TODO
-	return false, nil
+	mapClaims := jwtToken.Claims.(*domain.AccessTokenClaim)
+	// If role is user, check if the account_id or customer_id belongs to the same token
+	if mapClaims.IsUserRole() {
+		if !mapClaims.IsRequestVerifiedWithTokenClaims(urlParams) {
+			return false, nil
+		}
+	}
+	// Verify if the user has permissions to the routes
+	isAuthorized := s.rolePermissions.IsAuthorizedFor(mapClaims.Role, urlParams["route-name"])
+	return isAuthorized, nil
 }
 
 func jwtTokenFromString(tokenString string) (*jwt.Token, error) {
@@ -56,7 +65,7 @@ func jwtTokenFromString(tokenString string) (*jwt.Token, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		return []byte(domain.HMAC_SAMPLE_SECRET), nil
 	}
-	token, err := jwt.Parse(tokenString, keyFunc)
+	token, err := jwt.ParseWithClaims(tokenString, &domain.AccessTokenClaim{}, keyFunc)
 	if err != nil {
 		log.Error("Error while parsing token: ", err.Error())
 		return nil, err
@@ -64,6 +73,9 @@ func jwtTokenFromString(tokenString string) (*jwt.Token, error) {
 	return token, nil
 }
 
-func NewAuthService(repo domain.AuthRepository) AuthService {
-	return DefaultAuthService{repo}
+func NewAuthService(repo domain.AuthRepository, permissions domain.RolePermissions) AuthService {
+	return DefaultAuthService{
+		repo,
+		permissions,
+	}
 }
