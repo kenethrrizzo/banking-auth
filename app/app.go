@@ -8,30 +8,34 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
-	"github.com/kenethrrizzo/banking-auth/config"
+
+	handl "github.com/kenethrrizzo/banking-auth/app/handlers"
 	"github.com/kenethrrizzo/banking-auth/domain"
+	repo "github.com/kenethrrizzo/banking-auth/domain/repositories"
 	"github.com/kenethrrizzo/banking-auth/service"
 	log "github.com/sirupsen/logrus"
 )
 
 func Start() {
 	router := mux.NewRouter()
-	serverConfig := config.NewServerConfig()
+	serverConfig := NewServerConfig()
 	dbclient := getDatabaseClient()
 
-	authRepository := domain.NewAuthRepository(dbclient)
+	authRepository := repo.NewAuthRepository(dbclient)
 	rolePermissions := domain.GetRolePermissions()
 
 	authService := service.NewAuthService(authRepository, rolePermissions)
 
-	authHandler := AuthHandler{authService}
+	authHandler := handl.AuthHandler{
+		Service: authService,
+	}
 
 	router.HandleFunc(
-		"/auth/login", authHandler.login,
+		"/auth/login", authHandler.Login,
 	).Methods(http.MethodPost)
 
 	router.HandleFunc(
-		"/auth/verify", authHandler.verify,
+		"/auth/verify", authHandler.Verify,
 	).Methods(http.MethodGet)
 
 	log.Error(http.ListenAndServe(
@@ -42,7 +46,7 @@ func Start() {
 }
 
 func getDatabaseClient() *sqlx.DB {
-	dbconfig := config.NewDatabaseConfig()
+	dbconfig := NewDatabaseConfig()
 
 	client, err := sqlx.Open(
 		dbconfig.Driver,
@@ -52,7 +56,7 @@ func getDatabaseClient() *sqlx.DB {
 			dbconfig.Name))
 
 	if err != nil {
-		log.Error("Error while opening connection:", err.Error())
+		log.Error("Error while opening connection: ", err.Error())
 		panic(err)
 	}
 

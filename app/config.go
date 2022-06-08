@@ -1,4 +1,4 @@
-package config
+package app
 
 import (
 	"fmt"
@@ -39,8 +39,8 @@ func unmarshalConfig() Config {
 	v := viper.New()
 
 	v.SetConfigName("config")
-	v.SetConfigType("yml")
-	v.AddConfigPath("./config")
+	v.SetConfigType("json")
+	v.AddConfigPath(".")
 
 	err := v.ReadInConfig()
 	if err != nil {

@@ -1,4 +1,4 @@
-package app
+package handlers
 
 import (
 	"encoding/json"
@@ -11,10 +11,10 @@ import (
 )
 
 type AuthHandler struct {
-	service service.AuthService
+	Service service.AuthService
 }
 
-func (h AuthHandler) login(rw http.ResponseWriter, r *http.Request) {
+func (h AuthHandler) Login(rw http.ResponseWriter, r *http.Request) {
 	log.Debug("[GET] login")
 	var LoginRequest dto.LoginRequest
 	err := json.NewDecoder(r.Body).Decode(&LoginRequest)
@@ -23,7 +23,7 @@ func (h AuthHandler) login(rw http.ResponseWriter, r *http.Request) {
 		writeResponse(rw, http.StatusBadRequest, dto.BadResponse{Error: err.Error()})
 		return
 	}
-	auth_response, err := h.service.Login(LoginRequest)
+	auth_response, err := h.Service.Login(LoginRequest)
 	if err != nil {
 		log.Error("Error while authenticating user: ", err.Error())
 		writeResponse(rw, http.StatusUnauthorized, dto.BadResponse{Error: err.Error()})
@@ -32,7 +32,7 @@ func (h AuthHandler) login(rw http.ResponseWriter, r *http.Request) {
 	writeResponse(rw, http.StatusOK, auth_response)
 }
 
-func (h AuthHandler) verify(rw http.ResponseWriter, r *http.Request) {
+func (h AuthHandler) Verify(rw http.ResponseWriter, r *http.Request) {
 	log.Debug("[GET] verify")
 	urlParams := make(map[string]string)
 	for k := range r.URL.Query() {
@@ -42,7 +42,7 @@ func (h AuthHandler) verify(rw http.ResponseWriter, r *http.Request) {
 		writeResponse(rw, http.StatusForbidden, dto.BadResponse{Error: errors.New("Missing tolen").Error()})
 		return
 	}
-	isAuthorized, err := h.service.Verify(urlParams)
+	isAuthorized, err := h.Service.Verify(urlParams)
 	if err != nil {
 		writeResponse(rw, http.StatusForbidden, dto.BadResponse{Error: errors.New("Missing tolen").Error()})
 		return

@@ -4,9 +4,10 @@ import (
 	"errors"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/kenethrrizzo/banking-auth/domain"
 	"github.com/kenethrrizzo/banking-auth/dto"
 
+	"github.com/kenethrrizzo/banking-auth/domain"
+	repo "github.com/kenethrrizzo/banking-auth/domain/repositories"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,7 +17,7 @@ type AuthService interface {
 }
 
 type DefaultAuthService struct {
-	repo            domain.AuthRepository
+	repo            repo.AuthRepository
 	rolePermissions domain.RolePermissions
 }
 
@@ -73,7 +74,7 @@ func jwtTokenFromString(tokenString string) (*jwt.Token, error) {
 	return token, nil
 }
 
-func NewAuthService(repo domain.AuthRepository, permissions domain.RolePermissions) AuthService {
+func NewAuthService(repo repo.AuthRepository, permissions domain.RolePermissions) AuthService {
 	return DefaultAuthService{
 		repo,
 		permissions,
